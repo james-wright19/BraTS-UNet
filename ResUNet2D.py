@@ -22,10 +22,15 @@ class ResConvBlock2D(torch.nn.Module):
         self.conv2 = nn.Conv2d(in_channels=out_channels, out_channels=out_channels, kernel_size=[3,3], padding=padding)
         self.relu = nn.ReLU()
         self.bn = nn.BatchNorm2d(out_channels)
+        self.adjust_channels = nn.Conv2d(in_channels, out_channels, kernel_size=1)
 
     def forward(self, x):
+        skip = x
+
         x = self.relu(self.bn(self.conv1(x)))
         x = self.relu(self.bn(self.conv2(x)))
+
+        x = x + self.adjust_channels(skip)
 
         return x
 
@@ -67,11 +72,11 @@ class UpBlock2D(torch.nn.Module):
         return x
 
 
-class ResUNet2d(torch.nn.Module):
+class ResUNet2D(torch.nn.Module):
 
 
     def __init__(self, padding=False):
-        super(ResUNet2d, self).__init__()
+        super(ResUNet2D, self).__init__()
 
         self.dec1 = DownBlock2D(1, 64, padding)
         self.dec2 = DownBlock2D(64, 128, padding)
@@ -80,7 +85,7 @@ class ResUNet2d(torch.nn.Module):
 
         # Introduce bottleneck here
 
-        self.bottleneck = ConvBlock2D(512, 1024, 1)
+        self.bottleneck = ResConvBlock2D(512, 1024, 1)
 
         # Up-conv blocks first upscale, then copy + crop, then conv
         self.up1 = UpBlock2D(1024, 512, padding)

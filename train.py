@@ -1,6 +1,7 @@
 from torch.utils.data import DataLoader
 import torch
 from UNet2D import UNet2D
+from ResUNet2D import ResUNet2D
 from torch.nn import CrossEntropyLoss
 from torch.optim import Adam
 from tqdm import tqdm
@@ -12,7 +13,7 @@ def train():
 
     train_dataloader = DataLoader(BratsDataset(), batch_size=128, shuffle=True)
 
-    model = UNet2D(True)
+    model = ResUNet2D(True)
 
     torch.nn.DataParallel(model)
     model.to(device)
