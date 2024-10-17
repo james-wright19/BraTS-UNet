@@ -1,18 +1,18 @@
 from torch.utils.data import DataLoader
 import torch
-from UNet3D import UNet3D
+from UNet2D import UNet2D
 from torch.nn import CrossEntropyLoss
 from torch.optim import Adam
-
-from dataloader import BratsDataset
+from tqdm import tqdm
+from Brats_2D_DS import BratsDataset
 import os
 
 def train():
-    device = torch.device("cuda")
+    device = torch.device("mps")
 
-    train_dataloader = DataLoader(BratsDataset(), batch_size=1, shuffle=True)
+    train_dataloader = DataLoader(BratsDataset(), batch_size=128, shuffle=True)
 
-    model = UNet3D(1, 1)
+    model = UNet2D(True)
 
     torch.nn.DataParallel(model)
     model.to(device)
@@ -27,10 +27,8 @@ def train():
 
         model.train()
 
-        for data, labels in train_dataloader:
-            data, labels = data.to(device), labels.to(device)
-
-            print(data.shape)
+        for data, labels in tqdm(train_dataloader):
+            data, labels = data.to(device=device, dtype=torch.float), labels.to(device=device, dtype=torch.float)
 
             optim.zero_grad()
 
